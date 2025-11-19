@@ -41,6 +41,36 @@ class RestaurantById(Resource):
 
         return "", 204
 
+class Pizzas(Resource):
+    def get(self):
+        pizzas = Pizza.query.all()
+        output = []
+
+        for p in pizzas:
+            output.append({
+                "id": p.id,
+                "ingredients": p.ingredients,
+                "name": p.name
+            })
+        return output, 200
+
+class RestaurantPizzas(Resource):
+    def post(self):
+        data = request.get_json()
+
+        try:
+            restaurant_pizza = RestaurantPizza(
+                price=data.get("price"),
+                pizza_id=data.get("pizza_id"),
+                restaurant_id=data.get("restaurant_id")
+            )
+            db.session.add(restaurant_pizza)
+            db.session.commit()
+
+            return restaurant_pizza.to_dict(), 201
+        except ValueError as e:
+            return {"errors": ["validation errors"]}, 400
+
 
 
 
@@ -50,6 +80,8 @@ def index():
 
 api.add_resource(Restaurants, '/restaurants')
 api.add_resource(RestaurantById, '/restaurants/<int:id>')
+api.add_resource(Pizzas, '/pizzas')
+api.add_resource(RestaurantPizzas, '/restaurant_pizzas')
 
 
 if __name__ == "__main__":
